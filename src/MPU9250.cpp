@@ -723,45 +723,36 @@ int MPU9250::calibrateAccel() {
   _axbD = 0;
   _aybD = 0;
   _azbD = 0;
-  for (size_t i=0; i < _numSamples; i++) {
+  for (size_t i = 0; i < _numSamples; i++)
+  {
     readSensor();
-    _axbD += (getAccelX_mss()/_axs + _axb)/((double)_numSamples);
-    _aybD += (getAccelY_mss()/_ays + _ayb)/((double)_numSamples);
-    _azbD += (getAccelZ_mss()/_azs + _azb)/((double)_numSamples);
+    _axbD = getAccelX_mss() / _axs + _axb;
+    _aybD = getAccelY_mss() / _ays + _ayb;
+    _azbD = getAccelZ_mss() / _azs + _azb;
+
+    if (_axbD < _axmin)
+      _axmin = _axbD;
+    if (_axbD > _axmax)
+      _axmax = _axbD;
+    if (_aybD < _aymin)
+      _aymin = _aybD;
+    if (_aybD > _aymax)
+      _aymax = _aybD;
+    if (_azbD < _azmin)
+      _azmin = _azbD;
+    if (_azbD > _azmax)
+      _azmax = _azbD;
+
     delay(20);
-  }
-  if (_axbD > 9.0f) {
-    _axmax = (float)_axbD;
-  }
-  if (_aybD > 9.0f) {
-    _aymax = (float)_aybD;
-  }
-  if (_azbD > 9.0f) {
-    _azmax = (float)_azbD;
-  }
-  if (_axbD < -9.0f) {
-    _axmin = (float)_axbD;
-  }
-  if (_aybD < -9.0f) {
-    _aymin = (float)_aybD;
-  }
-  if (_azbD < -9.0f) {
-    _azmin = (float)_azbD;
   }
 
   // find bias and scale factor
-  if ((abs(_axmin) > 9.0f) && (abs(_axmax) > 9.0f)) {
-    _axb = (_axmin + _axmax) / 2.0f;
-    _axs = G/((abs(_axmin) + abs(_axmax)) / 2.0f);
-  }
-  if ((abs(_aymin) > 9.0f) && (abs(_aymax) > 9.0f)) {
-    _ayb = (_aymin + _aymax) / 2.0f;
-    _ays = G/((abs(_aymin) + abs(_aymax)) / 2.0f);
-  }
-  if ((abs(_azmin) > 9.0f) && (abs(_azmax) > 9.0f)) {
-    _azb = (_azmin + _azmax) / 2.0f;
-    _azs = G/((abs(_azmin) + abs(_azmax)) / 2.0f);
-  }
+  _axb = (_axmax + _axmin) / 2.0f;
+  _axs = G / ((abs(_axmax) + abs(_axmin)) / 2.0f);
+  _ayb = (_aymax + _aymin) / 2.0f;
+  _ays = G / ((+abs(_aymax) + abs(_aymin)) / 2.0f);
+  _azb = (_azmax + _azmin) / 2.0f;
+  _azs = G / ((abs(_azmax) + abs(_azmin)) / 2.0f);
 
   // set the range, bandwidth, and srd back to what they were
   if (setAccelRange(_accelRange) < 0) {
